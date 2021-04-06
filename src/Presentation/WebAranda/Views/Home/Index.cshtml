@@ -1,0 +1,65 @@
+﻿@*@model*@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="">
+    <p>
+        El presente aplicativo permite capturar la información
+        relevante del equipo actual (sistema operativo,
+        nombre de la maquina, direcciones IP, disco duro,
+        RAM, y procesador
+    </p>
+    @*asp-route-id="@item.Id"*@
+    <button class="btn btn-outline-primary" id="btnDatos">Obtener datos</button>
+    <div id="resultado" class="mt-3">
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        ///Mostrar Tooltip
+
+        const buscarBtn = document.getElementById('btnDatos');
+
+        buscarBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            var url = '/Home/MostrarDatos';
+
+            const respose = await fetch(url, { method: 'POST' });
+            const data = await respose.json();
+            let html = '<ul>';
+            data.info.forEach(info => {
+                html += `<li>${info}</li>`;
+            });
+            html += '</ul>';
+            html += `<button class="btn btn-outline-info" data-id="${data.id}" id="btnReporte">Exportar Reporte</button>`;
+
+            document.getElementById('resultado').innerHTML = html;
+
+        });
+
+        document.body.addEventListener('click', async (event) => {
+            if (event.srcElement.id == 'btnReporte') {
+                const btnReporte = document.getElementById('btnReporte');
+                const url = `/Home/GenerarReporte/${btnReporte.getAttribute('data-id')}`;
+                const respose = await fetch(url, { method: 'POST' });
+                const data = await respose.json();
+                if (data.ok) {
+                    alert(`Se generó el archivo ${data.nombre} en la ruta ${data.ruta}`);
+                }
+                else {
+                    alert('No se pudo generar el archivo');
+                }
+            };
+        });
+
+    </script>
+}
